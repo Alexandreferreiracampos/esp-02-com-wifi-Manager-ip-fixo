@@ -1,0 +1,1 @@
+# esp-02-com-wifi-Manager-ip-fixo
