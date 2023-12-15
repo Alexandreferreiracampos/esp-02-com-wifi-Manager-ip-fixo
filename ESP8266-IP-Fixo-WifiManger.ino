@@ -4,6 +4,9 @@
 #include <WiFiManager.h>                 
 #include <ArduinoJson.h>       
 #include <FastLED.h>           
+#include <EEPROM.h>
+
+#define EEPROM_SIZE 2
 
 char static_ip[16] = "192.168.0.218";         
 char static_gw[16] = "192.168.0.1";
@@ -30,6 +33,8 @@ String Q2 = "<p><center></p><p><h1>Equipamento resetado!</h1></p><p><center></p>
 String Qid = "";
 String Rele1Quarto;  
 String Rele2Quarto;
+int rele1State;
+int rele2State ;
 String rgb;
 String rgbBrilho;
 String ResetEsp; // String para controle
@@ -45,6 +50,10 @@ void setup()
   Ql += Q_1;                                                // Monta tela pra informar que a luz
   Ql += "<p><center></p><p><a href=\"/Controle?Rele1Quarto=on \"><button style=\"background-color: rgb(123,104,238);height: 100px; width: 200px; border-radius: 25px;\"><h1>Rele1</h1></button></a><p><center></p><p><a href=\"/Controle?Rele2Quarto=on \"><button style=\"background-color: rgb(123,104,238);height: 100px; width: 200px; border-radius: 25px;\"><h1>Rele2</h1></button></a><p><center></p><p><a href=\"/Controle?ResetEsp=on \"><button style=\"background-color: rgb(255,0,0);height: 100px; width: 200px; border-radius: 25px;\"><h1>Reset</h1></button></a>";
   Qd += Q_1;                                                
+
+  EEPROM.begin(EEPROM_SIZE);
+  rele1State = EEPROM.read(0);
+  rele2State = EEPROM.read(1);
   
 int fitaSpeed = 20;
 pinMode(rele1, OUTPUT);
@@ -54,8 +63,8 @@ pinMode(GREENPIN, OUTPUT);
 pinMode(BLUEPIN,  OUTPUT);
 pinMode(bt, INPUT_PULLUP);
 pinMode(btBoot, INPUT_PULLUP);
-digitalWrite(rele1, LOW);
-digitalWrite(rele2, LOW);
+digitalWrite(rele1, rele1State);
+digitalWrite(rele2, rele2State);
 
 colorBars();
 
@@ -174,10 +183,14 @@ colorBars();
 
     if(Rele1Quarto == "on") {
       digitalWrite(rele1, !digitalRead(rele1));
+       EEPROM.write(0, digitalRead(rele1));
+       EEPROM.commit();
       
     }
     if(Rele2Quarto == "on"){
-      digitalWrite(rele2, !digitalRead(rele2)); 
+      digitalWrite(rele2, !digitalRead(rele2));
+      EEPROM.write(1, digitalRead(rele2));
+      EEPROM.commit(); 
     }
 
     if(rgb == "off"){
@@ -305,3 +318,7 @@ void loop()
  
 
 //http://192.168.0.106/Controle?FanQuarto=on
+//http://192.168.0.106/controle?rgb=140a200
+//http://192.168.0.106/controle?rgb=blinkNormal
+//http://192.168.0.106/controle?rgb=255a155
+//http://192.168.0.106/controle?
